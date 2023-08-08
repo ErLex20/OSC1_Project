@@ -7,13 +7,14 @@ function u = LPV_MPC_Controller(x, N, A, B, C, Q, R)
     R_bar = [];
     Q_bar = [];
     T_bar = A;
+    X = A;
     S_bar = B;
-    for i = 1:N
+    for i = 1:1:N
         R_bar = blkdiag(R_bar, R);
         Q_bar = blkdiag(Q_bar, Q);
-        if (i < N)
-            T_bar = [T_bar; T_bar(N-1)*A];
-            S_bar = [S_bar; A*S_bar(N-1)];
+        if (i > 1)
+            X = X*A;
+            T_bar = [T_bar; X];
         end
     end
 
