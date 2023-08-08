@@ -12,6 +12,7 @@ theta_des = -cot(atan2(x_des, y_des));
 xc = [0.1; 0.2; 0.05];
 uc = [1.0; 0.1];
 [A, B, P] = LPV_MPC_System(xc, uc);
+C = eye(size(A,1));
 
 % Orizzonte di predizione e controllo del MPC
 N = 10; % Numero di passi di predizione
@@ -37,8 +38,7 @@ for k = 1:num_steps
     [A, B, P] = LPV_MPC_System(xc, uc);
 
     % Calcolo dell'ingresso di controllo utilizzando LPV-MPC
-    %u = LPV_MPC_Controller();
-    u = [1; 0.1];
+    u = LPV_MPC_Controller(xc, N, A, B, C, Q, R);
 
     % Simulazione del sistema utilizzando l'ingresso di controllo
     delta_xk = LPV_MPC_Simulation(delta_xk, u, dt, A, B, P);
