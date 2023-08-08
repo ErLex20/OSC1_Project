@@ -15,7 +15,7 @@ uc = [1.0; 0.1];
 C = eye(size(A,1));
 
 % Orizzonte di predizione e controllo del MPC
-N = 10; % Numero di passi di predizione
+N = 6; % Numero di passi di predizione
 Q = diag([1, 1, 1]); % Peso per le variabili di stato (delta_x, delta_y, delta_theta)
 R = diag([1, 0.1]); % Peso per le variabili di controllo (v, omega)
 
