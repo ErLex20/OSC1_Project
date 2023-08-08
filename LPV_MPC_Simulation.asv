@@ -1,0 +1,5 @@
+function delta_xk_next = LPV_MPC_Simulation(delta_xk, u, dt, A, B, P)
+    % Simulazione del robot mobile nel piano utilizzando il modello linearizzato.
+
+    delta_xk_next = A * dt + B
+end
