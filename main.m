@@ -5,12 +5,11 @@ close all
 %% Sistema LPV MPC 
 % Generazione traiettoria
 R = 5; % Raggio della traiettoria circolare [m]
-[x_des, y_des] = GenerateCircularTrajectory(R);
-theta_des = -cot(atan2(x_des, y_des));
+[x_des, y_des, theta_des] = GenerateCircularTrajectory(R);
 
 % Punto di equilibrio
-xc = [0.1; 0.2; 0.05];
-uc = [1.0; 0.1];
+xc = [100; 50; 30];
+uc = [0; 0];
 [A, B, P] = LPV_MPC_System(xc, uc);
 C = eye(size(A,1));
 
@@ -28,23 +27,20 @@ delta_xk_history = zeros(size(A,1), num_steps);
 
 %% Simulazione
 
-delta_xk = xc;
 for k = 1:num_steps
     % Costruzione del modello LPV del sistema
     xk_des = [x_des(k); 
-             y_des(k);
-             theta_des(k)];
+              y_des(k);
+              theta_des(k)];
+    delta_xk = xk_des - xc;
 
-    [A, B, P] = LPV_MPC_System(xc, uc);
+    [A, B, P] = LPV_MPC_System(delta_xk, uc);
 
     % Calcolo dell'ingresso di controllo utilizzando LPV-MPC
-    u = LPV_MPC_Controller(xc, N, A, B, C, Q, R);
-
-    % Simulazione del sistema utilizzando l'ingresso di controllo
-    delta_xk = LPV_MPC_Simulation(delta_xk, u, dt, A, B, P);
+    u = LPV_MPC_Controller(delta_xk, N, A, B, C, Q, R);
 
     % Salvataggio dello stato corrente nella storia dello stato
-    delta_xk_history(:, k) = delta_xk;
+    delta_xk_history(:, k) = LPV_MPC_Simulation(delta_xk, u, dt*k, A, B, P);
 
     % Aggiornamento punto di equilibrio
     uc = uc + u;
