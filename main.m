@@ -91,6 +91,7 @@ plot(x_des, y_des, 'b-');
 for i = 1:num_steps
     x = delta_xk_history(1, i);
     y = delta_xk_history(2, i);
+    plot(x, y, '*');
     theta_des = atan2(y_des(i+1) - y_des(i), x_des(i+1) - x_des(i));
     robot_corners = [x - robot_length/2, x + robot_length/2, x + robot_length/2, x - robot_length/2;
                      y - robot_length/2, y - robot_length/2, y + robot_length/2, y + robot_length/2];
@@ -99,7 +100,7 @@ for i = 1:num_steps
     plot(rotated_corners(1,:), rotated_corners(2,:), 'r-');
 end
 title('Plot del Robot Mobile');
-legend("Traiettoria desiderata", "Traiettoria robot")
+legend("Traiettoria desiderata", "Traiettoria baricentro robot", "Traiettoria orientamento robot")
 xlabel('X');
 ylabel('Y');
 grid on;
