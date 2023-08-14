@@ -6,7 +6,9 @@ function [x, y, theta] = GenerateTrajectory(trajectory, num_points)
         y = R * sin(t);
         dx = -R * sin(t);
         dy = R * cos(t);
-        theta = atan2(dy, dx);
+        for i = 1:num_points
+            theta(i) = atan2(dy(i), dx(i));
+        end
     end
     
     if (strcmp(trajectory, "Straight"))
