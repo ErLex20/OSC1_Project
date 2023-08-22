@@ -34,6 +34,6 @@ function u_opt = LPV_MPC_Controller(x, N, A, B, C, Q, R)
     H = 2*(R_bar + S_bar' * Q_bar * S_bar);
     F = 2*(S_bar' * Q_bar' * T_bar);
     
-    u_opt = -inv(H)*F*x;
-    %u_opt = [u(1); u(2)];
+    u = -inv(H)*F*x;
+    u_opt = [u(1); u(2)];
 end

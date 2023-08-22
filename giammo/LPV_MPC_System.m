@@ -8,7 +8,7 @@ function [A, B, P] = LPV_MPC_System(x_eq, u_eq)
          0, 0, 0];
 
     B = [cos(theta_eq), 0;
-         0, sin(theta_eq);
+         sin(theta_eq), 0;
          0, 1];
 
 %     B = [cos(theta_eq), 0;
