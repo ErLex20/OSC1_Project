@@ -2,10 +2,6 @@ clc
 clear all 
 close all
 
-% definisco la dinamica dell'uniciclo;
-
-v = 1;            % m/s
-omega = 1;          % rad/s
 
 % ------------- variabili per i requisiti ------------- %
 
@@ -16,7 +12,7 @@ iterations = 300;
 Nu = 60; 
 weight_Q = 500;
 weight_R = 10;
-ngiri = 6;
+ngiri = 2;
 
 % ---- Prova n°2 interessante basse iterazioni, alto guadagno, bassa finestra --------%
 
@@ -45,27 +41,36 @@ max_iterations = ngiri*iterations;
 % ----------------------------------------------------- %
 t = linspace(0, T_sim, max_iterations);
 tau = 0.01; % trovato sperimentalmente
+time = linspace(0, T_sim, max_iterations);
+% definisco la dinamica dell'uniciclo;
 
+% v = 1;            % m/s
+max_theta = ngiri*2*pi;
+r = 1;
+omega = max_theta/T_sim;          % rad/s
+v = omega*r;            % m/s
 
 % definisco la dinamica non lineare dell'uniciclo
 
 
 x = zeros(max_iterations, 3);
 
+%% ---- Traiettoria desiderata: ---------- %
+% i parametri relativi alle traiettorie sono definiti all'interno della
+% funzione "genTrajectory.m"
 
-%% ---- Traiettoria desiderata: Circonferenza ---------- %
+% 1 --> Ellisse
+% 2 --> Circonferenza
+% 3 --> Parabola
+% 4 --> Sinusoide
+% 5 --> Onda quadra
+% 6 --> Spirale
 
-theta = linspace(0, ngiri*2*pi, max_iterations);
-
-
-x_des = zeros(3, max_iterations);
-r = 1;                          % Raggio della circonferenza
+tipo_traiettoria = 2;
+%r = 1;                                       % Raggio della circonferenza
 center = [0;0];
-for i = 1:max_iterations
-    x_des(1, i) = center(1, 1)+r*cos(theta(i));
-    x_des(2, i) = center(2, 1)+r*sin(theta(i));
-    x_des(3, i) = theta(i);
-end
+x_des = genTrajectory(max_iterations,tipo_traiettoria,ngiri,center,r);
+
 
 % ---- Calcolo del controllo ------------------ %
 %keyboard;
@@ -90,9 +95,11 @@ A = Ac;
 B = Bc;
 C = eye(3);
 x_start = x0;
+y0 = [1;0;0];
 
-u_max = [1;1.2];
+u_max = [100;100];
 u_min = -u_max;
+
 
 for k = 1:max_iterations - 1
     
@@ -112,19 +119,16 @@ for k = 1:max_iterations - 1
     xk_f(:, k+1) = A*xk_f(:, k) + B*uk_f + ck;
     
     %dinamica non lineare del sistema preso in esame
-    tspan = [theta(k), theta(k) + tau];
-    odefun = @(t_nl, dxdt) [uk_f(1) * cos(dxdt(3));uk_f(1) * sin(dxdt(3)); uk_f(2)];
-    %odefun = @(t_nl, dxdt) [v * cos(dxdt(3));v * sin(dxdt(3)); omega];
-    [t_nl, x_temp] = ode45(odefun, tspan, x_start);
-    x_start = x_temp(end, :).';
-    x(k, :) = x_start.';
-    
+    tspan = [time(k), time(k+1)];
+    [t_f, y] = ode45(@(t_f, y) unicicloODE(t_f, y, v, omega, tipo_traiettoria, T_sim), tspan, y0);
+%     [t_f, y] = ode45(@(t_f, y) unicicloODE(t_f, y, uk_f(1), uk_f(2), tipo_traiettoria), tspan, y0);
+    y0 = y(end, :).';
+    y_f(:, k) = y0;
     % controllo ottimo su tutto l'orizzonte temporale
     U_star(k,:) = uk_f';
 end
-x(end, :) = [1,0,0];
+y(end+1, :) = y0;
 
-% Plot dei risultati (ad esempio, la traiettoria)
 
 
 figure(1)
@@ -145,11 +149,20 @@ figure(3)
 hold on
 plot(xk_f(1, :), xk_f(2, :));
 plot(x_des(1, :),x_des(2, :));
-plot(x(:, 1), x(:, 2));
+plot(y_f(1, :), y_f(2,:));
 title('Trajectory of a Uniform Circular Movement')
 grid on
 legend("MPC trajectory","desired trajectory", "non-linear trajectory");
 
-
+function dydt = unicicloODE(t, y, v, omega, traiettoria, T_sim)
+    x = y(1);
+    y_t = y(2);    
+    theta = y(3)+pi/2;
+    
+    dxdt = v * cos(theta);
+    dydt = v * sin(theta);
+    dthetadt = omega;
+    dydt = [dxdt; dydt; dthetadt];
+end
 
 

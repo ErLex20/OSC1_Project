@@ -46,6 +46,7 @@ function u_opt = LPV_MPC_Controller(x, N, A, B, C, Q, R, S, u_max, u_min)
     G = [];
     G1 = [];
     G2 = [];
+    
     W = u_max(1)*ones(2*size(B,2)*N,1);   % setto il vincolo del primo controllo
     W(end/2 + 1:end) = -u_min(1);
     W(2:2:end) = u_max(2);                % setto il vincolo del secondo controllo
