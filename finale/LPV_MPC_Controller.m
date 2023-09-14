@@ -1,7 +1,7 @@
 function u_opt = LPV_MPC_Controller(x, N, A, B, C, Q, R, S, u_max, u_min)
     
-    
     global G W
+
     R_bar = [];
     Q_bar = [];
     T_bar = A;
@@ -22,11 +22,7 @@ function u_opt = LPV_MPC_Controller(x, N, A, B, C, Q, R, S, u_max, u_min)
         end
         
     end
-
     
-    
-    % vincolo terminale x(Nu) = 0;
-    %T_bar(size(A,1)*(N-1)+1:size(A,1)*N,:) = 0;
     Q_bar = blkdiag(Q_bar, S);
     S_bar = P;
     c = 1;
@@ -34,8 +30,6 @@ function u_opt = LPV_MPC_Controller(x, N, A, B, C, Q, R, S, u_max, u_min)
         S_bar(:, i:i+size(B, 2)-1) = [zeros(size(A,2)*c, size(B,2)); S_bar(1:size(A, 2)*N-size(A, 2)*c, 1:size(B,2))];
         c = c + 1;
     end
-    % vincolo terminale x(Nu) = 0;
-    %S_bar(size(A,1)*(N-1)+1:size(A,1)*N,:) = 0;
 
     Y = 2*(Q + T_bar' * Q_bar * T_bar);
     H = 2*(R_bar + S_bar' * Q_bar * S_bar);
@@ -47,11 +41,10 @@ function u_opt = LPV_MPC_Controller(x, N, A, B, C, Q, R, S, u_max, u_min)
     G1 = [];
     G2 = [];
     
-    W = u_max(1)*ones(2*size(B,2)*N,1);   % setto il vincolo del primo controllo
+    W = u_max(1)*ones(2*size(B,2)*N,1);   % vincolo sul primo controllo
     W(end/2 + 1:end) = -u_min(1);
-    W(2:2:end) = u_max(2);                % setto il vincolo del secondo controllo
+    W(2:2:end) = u_max(2);                % vincolo sul secondo controllo
     W(end/2 + 2:2:end) = -u_min(2);
-
 
     for i = 1:N
         G1 = blkdiag(G1, eye(size(B,2)));
@@ -59,35 +52,16 @@ function u_opt = LPV_MPC_Controller(x, N, A, B, C, Q, R, S, u_max, u_min)
     end
     G = [G1;G2];
 
-
-    
-    objective = @(u) 0.5*u'*H*u + x'*F'*u;      %funzione obiettivo
-    options = optimoptions('fmincon', 'Display', 'off');  % Opzioni di ottimizzazione
+    objective = @(u) 0.5*u'*H*u + x'*F'*u;                                  % funzione obiettivo
+    options = optimoptions('fmincon', 'Display', 'off');                    % opzioni di ottimizzazione
     u = fmincon(objective, init, [], [], [], [], [], [], @mycon, options);
     u_opt = [u(1); u(2)];
 end
 
 function [c, ceq] = mycon(u)
+    
     global G W
     
-    c =  G*u-W;   % Vincoli di disuguaglianza (vuoti nel tuo caso)
-    %c = [];
-    ceq = []; % Vincoli di uguaglianza (vuoti nel tuo caso)
+    c =  G*u-W;   % Vincoli di disuguaglianza
+    ceq = [];     % Vincoli di uguaglianza
 end
-
-
-
-
-
-
-%     if(u_max == -u_min)
-%         W = u_max(1)*ones(2*size(B,2)*N,1);   % setto il vincolo del primo controllo
-%         W(end/2 + 1:end) = u_max(1);
-%         W(2:2:end) = u_max(2);          % setto il vincolo del secondo controllo
-%         W(end/2 + 2:2:end) = u_max(2);
-%     else
-%         W = u_max(1)*ones(2*size(B,2)*N,1);   % setto il vincolo del primo controllo
-%         W(end/2 + 1:end) = -u_min(1);
-%         W(2:2:end) = u_max(2);          % setto il vincolo del secondo controllo
-%         W(end/2 + 2:2:end) = -u_min(2);
-%     end
