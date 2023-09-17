@@ -93,7 +93,6 @@ u_min = -u_max;
 %% ------------------ LPV MPC ------------------ %%
 
 for k = 1:max_iterations-1
-    
     txt = sprintf('Iterazione n°: %d / %d', k, max_iterations);
     disp(txt);
     x_error = x_k(:, k) - x_des(:, k);
