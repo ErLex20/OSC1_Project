@@ -19,7 +19,7 @@ switch tipo_traiettoria
         for i = 1:max_iterations
             x_des(1, i) = center(1, 1) + r*cos(theta(i));
             x_des(2, i) = center(2, 1) + r*sin(theta(i));
-            x_des(3, i) = theta(i);
+            x_des(3, i) = theta(i) + pi/2;
         end
         title_text = 'Circonferenza';
 
